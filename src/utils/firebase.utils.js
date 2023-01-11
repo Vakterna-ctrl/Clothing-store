@@ -5,6 +5,10 @@ import {
   signInWithRedirect,
   GoogleAuthProvider,
 } from "firebase/auth";
+// doc = get document instance
+// getDoc = access data
+// setDoc = write in data
+import { getFirestore, doc, getDoc, setDoc } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAGd9QYpp_9xAsKHYEEmwC83UFfOqvPxIY",
@@ -16,15 +20,45 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
+// This instance allows CRUD to happen
 const firebaseApp = initializeApp(firebaseConfig);
 
 //Initialize provider
-const provider = new GoogleAuthProvider();
+// needed for google authentication
+const googleProvider = new GoogleAuthProvider();
 
-provider.setCustomParameters({
+// tells how google authentication on how to behave
+googleProvider.setCustomParameters({
   // force user to select account
   prompt: "select_account",
 });
 
+// keeps track of the authentication state of the entire applicaion
 export const auth = getAuth();
-export const signInWithGooglePopup = () => signInWithPopup(auth, provider);
+export const signInWithGooglePopup = () =>
+  signInWithPopup(auth, googleProvider);
+export const signInWithGoogleRedirect = () =>
+  signInWithRedirect(auth, googleProvider);
+
+export const db = getFirestore();
+
+export const createUserDocumentsFromAuth = async (userAuth) => {
+  // instance of a document model
+  const userDocRef = doc(db, "users", userAuth.uid);
+
+  // get data from document and also check if document exist
+  const userSnapshot = await getDoc(userDocRef);
+
+  //check if document exist if not create document
+  if (!userSnapshot.exists()) {
+    const { displayName, email } = userAuth;
+    const createdAt = new Date();
+
+    try {
+      await setDoc(userDocRef, { displayName, email, createdAt });
+    } catch (error) {
+      console.log("error creating the user", error.message);
+    }
+  }
+  return userDocRef;
+};
