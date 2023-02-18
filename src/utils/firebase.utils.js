@@ -5,6 +5,7 @@ import {
   signInWithRedirect,
   GoogleAuthProvider,
   createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
 } from "firebase/auth";
 // doc = get document instance
 // getDoc = access data
@@ -41,17 +42,19 @@ export const signInWithGooglePopup = () =>
 export const signInWithGoogleRedirect = () =>
   signInWithRedirect(auth, googleProvider);
 
+// Initialize Cloud Firestore and get a reference to the service
 export const db = getFirestore();
 
 export const createUserDocumentsFromAuth = async (
   userAuth,
   additionalInformation
 ) => {
+  // if uid does nott exist. Stop process
   if (!userAuth) return;
   // instance of a document model
   const userDocRef = doc(db, "users", userAuth.uid);
 
-  // get data from document and also check if document exist
+  // get data from document
   const userSnapshot = await getDoc(userDocRef);
 
   //check if document exist if not create document
@@ -76,5 +79,11 @@ export const createUserDocumentsFromAuth = async (
 export const createAuthUserWithEmailAndPassword = async (email, password) => {
   if (!email || !password) return;
 
-  return await createAuthUserWithEmailAndPassword(auth, email, password);
+  return await createUserWithEmailAndPassword(auth, email, password);
+};
+
+export const SignInAuthUserWithEmailAndPassword = async (email, password) => {
+  if (!email || !password) return;
+
+  return await signInWithEmailAndPassword(auth, email, password);
 };
